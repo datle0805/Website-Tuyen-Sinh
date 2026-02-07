@@ -16,14 +16,22 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use(cors(corsOptions));
 app.use(express.json()); // Body parser
 app.use(morgan("dev")); // Logger
 
 // Routes
 import healthRoutes from "./modules/health/health.routes";
+import authRoutes from "./modules/auth/auth.routes";
 
 app.use("/api/health", healthRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
     res.send("API is running...");
