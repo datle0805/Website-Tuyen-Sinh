@@ -29,9 +29,11 @@ app.use(morgan("dev")); // Logger
 // Routes
 import healthRoutes from "./modules/health/health.routes";
 import authRoutes from "./modules/auth/auth.routes";
+import applicationRoutes from "./modules/application/application.routes";
 
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/applications", applicationRoutes);
 
 app.get("/", (req, res) => {
     res.send("API is running...");

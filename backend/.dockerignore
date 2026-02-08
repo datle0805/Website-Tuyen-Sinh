@@ -1,0 +1,13 @@
+node_modules
+dist
+.env
+.dockerignore
+Dockerfile
+npm-debug.log
+README.md
+.git
+.github
+.agents
+.vscode
+.agent
+.gemini

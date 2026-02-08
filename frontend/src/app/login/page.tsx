@@ -1,25 +1,47 @@
 "use client";
-import React, { useState } from "react";
-import { signIn } from "next-auth/react";
+import React, { useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { loginSchema, LoginFormData } from "@/lib/validationSchemas";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const router = useRouter();
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const res = await signIn("credentials", { redirect: false, email, password });
-    setLoading(false);
-    if (res && (res as any).error) {
-      setError((res as any).error as string);
-    } else {
-      window.location.href = "/";
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: yupResolver(loginSchema),
+  });
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (session) {
+      router.push("/");
+    }
+  }, [session, router]);
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email: data.email,
+        password: data.password,
+      });
+
+      if (res && (res as any).error) {
+        setError("root", { message: (res as any).error });
+      } else {
+        window.location.href = "/";
+      }
+    } catch (err: any) {
+      setError("root", { message: "Có lỗi xảy ra. Vui lòng thử lại." });
     }
   };
 
@@ -50,31 +72,32 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={onSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Email field */}
             <div className={`space-y-2 animate-fadeIn stagger-1 opacity-0`} style={{ animationFillMode: 'forwards' }}>
               <label htmlFor="email" className="block text-sm font-medium text-slate-300">
                 Email
               </label>
               <div className="relative group">
-                <div className={`absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl blur opacity-0 group-hover:opacity-25 transition-opacity duration-300 ${focusedField === 'email' ? 'opacity-40' : ''}`}></div>
+                <div className={`absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl blur opacity-0 group-hover:opacity-25 transition-opacity duration-300 ${errors.email ? 'opacity-40 from-red-500 to-red-500' : ''}`}></div>
                 <input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocusedField('email')}
-                  onBlur={() => setFocusedField(null)}
-                  required
                   placeholder="your@email.com"
-                  className="relative w-full h-12 px-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
+                  {...register('email')}
+                  className={`relative w-full h-12 px-4 rounded-xl bg-slate-800/50 border text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                    errors.email
+                      ? 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20'
+                      : 'border-slate-700/50 focus:border-emerald-500/50 focus:ring-emerald-500/20'
+                  }`}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  <svg className={`w-5 h-5 transition-colors duration-300 ${focusedField === 'email' ? 'text-emerald-400' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg className={`w-5 h-5 transition-colors duration-300 ${errors.email ? 'text-red-400' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
               </div>
+              {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
             </div>
 
             {/* Password field */}
@@ -83,24 +106,25 @@ export default function LoginPage() {
                 Mật khẩu
               </label>
               <div className="relative group">
-                <div className={`absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl blur opacity-0 group-hover:opacity-25 transition-opacity duration-300 ${focusedField === 'password' ? 'opacity-40' : ''}`}></div>
+                <div className={`absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl blur opacity-0 group-hover:opacity-25 transition-opacity duration-300 ${errors.password ? 'opacity-40 from-red-500 to-red-500' : ''}`}></div>
                 <input
                   id="password"
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocusedField('password')}
-                  onBlur={() => setFocusedField(null)}
-                  required
                   placeholder="••••••••"
-                  className="relative w-full h-12 px-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
+                  {...register('password')}
+                  className={`relative w-full h-12 px-4 rounded-xl bg-slate-800/50 border text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                    errors.password
+                      ? 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20'
+                      : 'border-slate-700/50 focus:border-emerald-500/50 focus:ring-emerald-500/20'
+                  }`}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  <svg className={`w-5 h-5 transition-colors duration-300 ${focusedField === 'password' ? 'text-emerald-400' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg className={`w-5 h-5 transition-colors duration-300 ${errors.password ? 'text-red-400' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
               </div>
+              {errors.password && <p className="text-xs text-red-400">{errors.password.message}</p>}
             </div>
 
             {/* Forgot password link */}
@@ -111,13 +135,13 @@ export default function LoginPage() {
             </div>
 
             {/* Error message */}
-            {error && (
+            {errors.root && (
               <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 animate-shake">
                 <p className="text-sm text-red-400 flex items-center gap-2">
                   <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {error}
+                  {errors.root.message}
                 </p>
               </div>
             )}
@@ -126,10 +150,10 @@ export default function LoginPage() {
             <div className="animate-fadeIn stagger-4 opacity-0" style={{ animationFillMode: 'forwards' }}>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isSubmitting}
                 className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 cursor-pointer flex items-center justify-center gap-2"
               >
-                {loading ? (
+                {isSubmitting ? (
                   <>
                     <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

@@ -257,6 +257,44 @@ h6 {
   animation: gradient 15s ease infinite;
 }
 
+.bg-grid {
+  background-size: 30px 30px;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* ===== Date Input Customization ===== */
+input[type="date"] {
+  position: relative;
+  min-height: 2.75rem;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  bottom: 0;
+  color: transparent;
+  cursor: pointer;
+  height: auto;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+  z-index: 10;
+}
+
+/* Custom Calendar Icon for Dark Mode */
+.dark-date-input {
+  color-scheme: dark;
+}
+
+/* Appearance for Chrome/Safari */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+  display: none;
+}
+
 /* ===== Input Focus Glow ===== */
 .input-glow:focus {
   box-shadow:

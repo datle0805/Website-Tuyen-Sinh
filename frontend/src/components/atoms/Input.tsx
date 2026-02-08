@@ -18,7 +18,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 )}
                 <input
                     className={cn(
-                        "flex h-11 w-full rounded-lg border border-slate-700 bg-[var(--color-secondary)] px-3 py-2 text-sm text-[var(--color-foreground)] placeholder:text-slate-400 focus:border-[var(--color-cta)] focus:outline-none focus:ring-1 focus:ring-[var(--color-cta)] disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-200",
+                        "h-11 w-full rounded-lg border border-slate-700 bg-[var(--color-secondary)] px-3 py-2 text-sm text-[var(--color-foreground)] placeholder:text-slate-400 focus:border-[var(--color-cta)] focus:outline-none focus:ring-1 focus:ring-[var(--color-cta)] disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-200",
                         error && "border-red-500 focus:border-red-500 focus:ring-red-500",
                         className
                     )}

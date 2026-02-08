@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import User from "../../models/User";
+import generateToken from "../../utils/generateToken";
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS || 12);
 
@@ -19,7 +20,13 @@ export const register = async (req: Request, res: Response) => {
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await User.create({ email, passwordHash: hash, name });
 
-    return res.status(201).json({ id: user._id, email: user.email, name: user.name });
+    return res.status(201).json({
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      token: generateToken(user._id.toString())
+    });
   } catch (err: any) {
     return res.status(500).json({ message: err.message || "Server error" });
   }
@@ -41,7 +48,13 @@ export const credentials = async (req: Request, res: Response) => {
     if (!match) return res.status(401).json({ message: "Invalid credentials" });
 
     // Return minimal user object for NextAuth
-    return res.json({ id: user._id, email: user.email, name: user.name });
+    return res.json({
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      token: generateToken(user._id.toString())
+    });
   } catch (err: any) {
     return res.status(500).json({ message: err.message || "Server error" });
   }

@@ -6,6 +6,7 @@ export interface IUser extends Document {
   name?: string;
   oauthProvider?: string;
   oauthId?: string;
+  role: 'user' | 'admin';
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -17,6 +18,7 @@ const UserSchema: Schema = new Schema(
     name: { type: String },
     oauthProvider: { type: String },
     oauthId: { type: String },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
   },
   { timestamps: true }
 );
