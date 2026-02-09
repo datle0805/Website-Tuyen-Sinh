@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import User from "../../models/User";
 import generateToken from "../../utils/generateToken";
 
@@ -17,7 +17,7 @@ export const register = async (req: Request, res: Response) => {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    const hash = await bcrypt.hash(password, SALT_ROUNDS);
+    const hash = await bcryptjs.hash(password, SALT_ROUNDS);
     const user = await User.create({ email, passwordHash: hash, name });
 
     return res.status(201).json({
@@ -44,7 +44,7 @@ export const credentials = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const match = await bcrypt.compare(password, user.passwordHash);
+    const match = await bcryptjs.compare(password, user.passwordHash);
     if (!match) return res.status(401).json({ message: "Invalid credentials" });
 
     // Return minimal user object for NextAuth
