@@ -15,11 +15,17 @@ const connectDB = async () => {
     if (!cached.promise) {
         const opts = {
             bufferCommands: true,
-            serverSelectionTimeoutMS: 5000,
+            serverSelectionTimeoutMS: 10000,
             socketTimeoutMS: 45000,
         };
 
-        cached.promise = mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/admissions", opts).then((mongoose) => {
+        const uri = process.env.MONGO_URI || "mongodb://localhost:27017/admissions";
+
+        if (!process.env.MONGO_URI && process.env.NODE_ENV === "production") {
+            throw new Error("MONGO_URI environment variable is not defined");
+        }
+
+        cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
             console.log(`MongoDB Connected: ${mongoose.connection.host}`);
             return mongoose;
         });
