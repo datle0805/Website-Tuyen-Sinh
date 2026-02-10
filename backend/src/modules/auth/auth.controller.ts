@@ -12,13 +12,14 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const existing = await User.findOne({ email });
+    const emailInput = (email || "").toLowerCase().trim();
+    const existing = await User.findOne({ email: emailInput });
     if (existing) {
       return res.status(409).json({ message: "User already exists" });
     }
 
     const hash = await bcryptjs.hash(password, SALT_ROUNDS);
-    const user = await User.create({ email, passwordHash: hash, name });
+    const user = await User.create({ email: emailInput, passwordHash: hash, name });
 
     return res.status(201).json({
       id: user._id,
@@ -39,13 +40,21 @@ export const credentials = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email }).lean();
+    const emailInput = (email || "").toLowerCase().trim();
+    const user = await User.findOne({ email: emailInput });
     if (!user || !user.passwordHash) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const match = await bcryptjs.compare(password, user.passwordHash);
     if (!match) return res.status(401).json({ message: "Invalid credentials" });
+
+    // Failsafe: Promote to admin if email matches ADMIN_EMAIL env
+    const adminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
+    if (user.email.toLowerCase() === adminEmail && user.role !== 'admin') {
+      user.role = 'admin';
+      await user.save();
+    }
 
     // Return minimal user object for NextAuth
     return res.json({
@@ -84,7 +93,7 @@ export const createAdmin = async (req: Request, res: Response) => {
     await User.create({
       email,
       passwordHash: hash,
-      name: "Admin Caca",
+      name: "Admin Coca",
       role: "admin"
     });
 

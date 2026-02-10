@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { Button } from "@/components/atoms/Button";
-import { GraduationCap, LogOut } from "lucide-react";
+import { GraduationCap, LogOut, Menu, X } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 
 export function Navbar() {
     const { data: session, status } = useSession();
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleLogout = async () => {
         await signOut({ redirect: true, callbackUrl: "/" });
@@ -46,14 +47,14 @@ export function Navbar() {
                     </Link>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4">
                     {status === "loading" ? (
                         <div className="h-10 w-10 animate-pulse bg-slate-700 rounded-lg" />
                     ) : session ? (
                         <div className="relative">
                             <button
                                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+                                className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg hover:bg-slate-800/50 transition-colors"
                             >
                                 <div className="flex items-center gap-2">
                                     <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-sm font-medium">
@@ -116,17 +117,69 @@ export function Navbar() {
                     ) : (
                         <>
                             <Link href="/login">
-                                <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
+                                <Button variant="ghost" size="sm" className="px-2 sm:px-4">
                                     Đăng nhập
                                 </Button>
                             </Link>
-                            <Link href="/register">
+                            <Link href="/register" className="hidden sm:block">
                                 <Button size="sm">Đăng ký ngay</Button>
                             </Link>
                         </>
                     )}
+
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="p-2 md:hidden text-slate-400 hover:text-white transition-colors"
+                    >
+                        {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                    </button>
                 </div>
             </div>
+
+            {/* Mobile Navigation Drawer */}
+            {mobileMenuOpen && (
+                <div className="md:hidden border-t border-white/5 bg-[var(--color-background)] py-4 px-4 space-y-4 animate-fadeIn">
+                    <Link
+                        href="/programs"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block text-base font-medium text-slate-300 hover:text-white transition-colors"
+                    >
+                        Ngành đào tạo
+                    </Link>
+                    {(session?.user as any)?.role === 'admin' ? (
+                        <Link
+                            href="/admin"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block text-base font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+                        >
+                            Quản trị hồ sơ
+                        </Link>
+                    ) : (
+                        <Link
+                            href="/submit"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block text-base font-medium text-slate-300 hover:text-white transition-colors"
+                        >
+                            Nộp hồ sơ
+                        </Link>
+                    )}
+                    <Link
+                        href="/guide"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block text-base font-medium text-slate-300 hover:text-white transition-colors"
+                    >
+                        Hướng dẫn
+                    </Link>
+                    {!session && (
+                        <div className="pt-4 border-t border-white/5">
+                            <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                                <Button className="w-full">Đăng ký ngay</Button>
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            )}
         </nav>
     );
 }
