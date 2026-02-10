@@ -14,6 +14,8 @@ router.post(
 
 router.get("/", protect, applicationController.getApplications);
 
+router.get("/stats", protect, admin, applicationController.getApplicationStats);
+
 router.get("/:id", protect, applicationController.getApplicationById);
 
 router.patch(

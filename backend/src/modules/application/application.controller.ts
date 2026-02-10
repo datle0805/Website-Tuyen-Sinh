@@ -155,3 +155,23 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: error.message || "Server error" });
     }
 };
+
+export const getApplicationStats = async (req: AuthRequest, res: Response) => {
+    try {
+        const total = await Application.countDocuments();
+        const pending = await Application.countDocuments({ status: 'pending' });
+        const reviewing = await Application.countDocuments({ status: 'reviewing' });
+        const accepted = await Application.countDocuments({ status: 'accepted' });
+        const rejected = await Application.countDocuments({ status: 'rejected' });
+
+        res.json({
+            total,
+            pending,
+            reviewing,
+            accepted,
+            rejected
+        });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};

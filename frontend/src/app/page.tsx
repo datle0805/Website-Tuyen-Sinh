@@ -5,6 +5,7 @@ import { Button } from "@/components/atoms/Button";
 import { ArrowRight, BookOpen, CheckCircle, Clock, FileText, Globe, GraduationCap, Users, Award, Star, ChevronRight, Play, Sparkles, TrendingUp, Shield, Zap } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
 
 // Hook for scroll-triggered animations
 function useInView(threshold = 0.1) {
@@ -57,6 +58,9 @@ function AnimatedCounter({ end, duration = 2000, suffix = "" }: { end: number; d
 }
 
 export default function Home() {
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as any)?.role === 'admin';
+
   const heroRef = useInView();
   const featuresRef = useInView(0.2);
   const stepsRef = useInView(0.2);
@@ -171,9 +175,9 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-slideUp opacity-0" style={{ animationDelay: '0.7s', animationFillMode: 'forwards' }}>
-              <Link href="/register">
+              <Link href={isAdmin ? "/admin" : "/register"}>
                 <button className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold text-lg shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer flex items-center gap-2">
-                  <span>Nộp hồ sơ ngay</span>
+                  <span>{isAdmin ? "Quản lý hồ sơ" : "Nộp hồ sơ ngay"}</span>
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
@@ -513,9 +517,9 @@ export default function Home() {
                 Đăng ký ngay hôm nay để nhận ưu đãi đặc biệt.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/register">
+                <Link href={isAdmin ? "/admin" : "/register"}>
                   <button className="group px-8 py-4 rounded-xl bg-white text-emerald-600 font-bold text-lg shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer flex items-center gap-2">
-                    <span>Đăng ký ngay</span>
+                    <span>{isAdmin ? "Dashboard Quản trị" : "Đăng ký ngay"}</span>
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </Link>
