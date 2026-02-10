@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import StatusBadge from '@/components/admin/StatusBadge';
 import AppointmentForm from '@/components/admin/AppointmentForm';
+import StatusModal from '@/components/admin/StatusModal';
 
 interface Application {
     _id: string;
@@ -47,6 +48,10 @@ export default function AdminApplicationDetail() {
     const [updating, setUpdating] = useState(false);
     const [reviewNotes, setReviewNotes] = useState('');
 
+    // Modal state
+    const [modalOpen, setModalOpen] = useState(false);
+    const [targetStatus, setTargetStatus] = useState<'accepted' | 'rejected' | 'reviewing' | 'pending'>('reviewing');
+
     const fetchApplication = async () => {
         try {
             const res = await api.get(`/api/applications/${id}`);
@@ -63,17 +68,20 @@ export default function AdminApplicationDetail() {
         fetchApplication();
     }, [id]);
 
-    const handleStatusUpdate = async (newStatus: string) => {
-        if (!confirm(`Bạn có chắc chắn muốn chuyển trạng thái sang "${newStatus}"?`)) return;
+    const openStatusModal = (status: any) => {
+        setTargetStatus(status);
+        setModalOpen(true);
+    };
 
+    const handleStatusUpdate = async () => {
         setUpdating(true);
         try {
             await api.patch(`/api/applications/${id}/status`, {
-                status: newStatus,
+                status: targetStatus,
                 reviewNotes: reviewNotes
             });
             await fetchApplication();
-            alert('Cập nhật trạng thái thành công!');
+            setModalOpen(false);
         } catch (error) {
             console.error(error);
             alert('Có lỗi xảy ra khi cập nhật.');
@@ -113,21 +121,21 @@ export default function AdminApplicationDetail() {
 
                     <div className="flex gap-3">
                         <button
-                            onClick={() => handleStatusUpdate('reviewing')}
+                            onClick={() => openStatusModal('reviewing')}
                             disabled={updating || application.status === 'reviewing'}
                             className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-500/20 transition-all disabled:opacity-30"
                         >
                             Đang xem xét
                         </button>
                         <button
-                            onClick={() => handleStatusUpdate('rejected')}
+                            onClick={() => openStatusModal('rejected')}
                             disabled={updating || application.status === 'rejected'}
                             className="bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-500/20 transition-all disabled:opacity-30"
                         >
                             Từ chối
                         </button>
                         <button
-                            onClick={() => handleStatusUpdate('accepted')}
+                            onClick={() => openStatusModal('accepted')}
                             disabled={updating || application.status === 'accepted'}
                             className="bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-medium hover:bg-emerald-600 transition-all disabled:opacity-30 shadow-lg shadow-emerald-500/20"
                         >
@@ -243,6 +251,14 @@ export default function AdminApplicationDetail() {
                     </div>
                 </div>
             </div>
+
+            <StatusModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onConfirm={handleStatusUpdate}
+                status={targetStatus}
+                loading={updating}
+            />
         </div>
     );
 }
