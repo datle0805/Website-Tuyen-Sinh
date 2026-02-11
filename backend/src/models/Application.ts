@@ -28,6 +28,9 @@ export interface IApplication extends Document {
     reviewNotes?: string;
     reviewedBy?: mongoose.Types.ObjectId;
 
+    // Quiz
+    quizResultId?: mongoose.Types.ObjectId;
+
     createdAt: Date;
     updatedAt: Date;
 }
@@ -75,6 +78,9 @@ const ApplicationSchema: Schema = new Schema(
         // Admin Information
         reviewNotes: { type: String },
         reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
+
+        // Quiz
+        quizResultId: { type: Schema.Types.ObjectId, ref: "QuizResult" },
     },
     { timestamps: true }
 );

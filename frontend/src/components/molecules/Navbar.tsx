@@ -45,6 +45,9 @@ export function Navbar() {
                     <Link href="/guide" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
                         Hướng dẫn
                     </Link>
+                    <Link href="/quiz" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
+                        Kiểm tra Tiếng Anh
+                    </Link>
                 </div>
 
                 <div className="flex items-center gap-2 sm:gap-4">
@@ -170,6 +173,13 @@ export function Navbar() {
                         className="block text-base font-medium text-slate-300 hover:text-white transition-colors"
                     >
                         Hướng dẫn
+                    </Link>
+                    <Link
+                        href="/quiz"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block text-base font-medium text-slate-300 hover:text-white transition-colors"
+                    >
+                        Kiểm tra Tiếng Anh
                     </Link>
                     {!session && (
                         <div className="pt-4 border-t border-white/5">

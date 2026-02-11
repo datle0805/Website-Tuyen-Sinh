@@ -67,6 +67,12 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, app
                     >
                         Quản lý trực tuyến
                     </Button>
+                    <Button
+                        className="w-full h-14 text-lg font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 rounded-2xl shadow-[0_12px_24px_rgba(16,185,129,0.3)] hover:shadow-[0_16px_32px_rgba(16,185,129,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+                        onClick={() => window.location.href = `/quiz/${data._id}`}
+                    >
+                        Làm bài kiểm tra năng lực
+                    </Button>
                     <button
                         onClick={onClose}
                         className="w-full py-2 text-slate-500 hover:text-white font-bold text-sm uppercase tracking-widest transition-colors cursor-pointer"
