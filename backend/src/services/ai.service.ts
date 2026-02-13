@@ -54,19 +54,33 @@ export class AIService {
       explanation: string;
       category: string;
     }>;
+    usage?: {
+      promptTokens: number;
+      completionTokens: number;
+      totalTokens: number;
+    };
   }> {
     const systemPrompt = this.getQuizSystemPrompt();
     const userPrompt = this.getQuizUserPrompt(level);
 
     try {
       let responseText: string;
+      let usage: any;
 
       if (this.provider === 'gemini' && this.gemini) {
-        responseText = await this.callGemini(systemPrompt, userPrompt);
+        const result = await this.callGemini(systemPrompt, userPrompt);
+        responseText = result.text;
+        usage = result.usage;
       } else if (this.provider === 'openai' && this.openai) {
-        responseText = await this.callOpenAI(systemPrompt, userPrompt, 0.7);
+        const result = await this.callOpenAI(systemPrompt, userPrompt, 0.7);
+        responseText = result.text;
+        usage = result.usage;
       } else {
         throw new AIServiceError('AI provider not properly initialized');
+      }
+
+      if (usage) {
+        console.log(`[AI Quota] Model: ${this.model} | Prompt: ${usage.promptTokens} | Completion: ${usage.completionTokens} | Total: ${usage.totalTokens}`);
       }
 
       const parsedResponse = JSON.parse(responseText);
@@ -90,7 +104,10 @@ export class AIService {
       }
 
       logger.info('AI quiz generation completed successfully for level:', level);
-      return parsedResponse;
+      return {
+        questions: parsedResponse.questions,
+        usage
+      };
     } catch (error: any) {
       logger.error('AI quiz generation failed:', error.message);
 
@@ -113,7 +130,7 @@ export class AIService {
     systemPrompt: string,
     userPrompt: string,
     temperature: number
-  ): Promise<string> {
+  ): Promise<{ text: string; usage?: any }> {
     if (!this.openai) {
       throw new AIServiceError('OpenAI not initialized');
     }
@@ -129,11 +146,17 @@ export class AIService {
     });
 
     const responseText = completion.choices[0].message.content;
+    const usage = completion.usage ? {
+      promptTokens: completion.usage.prompt_tokens,
+      completionTokens: completion.usage.completion_tokens,
+      totalTokens: completion.usage.total_tokens
+    } : undefined;
+
     if (!responseText) {
       throw new AIServiceError('Empty response from OpenAI');
     }
 
-    return responseText;
+    return { text: responseText, usage };
   }
 
   /**
@@ -142,7 +165,7 @@ export class AIService {
   private async callGemini(
     systemPrompt: string,
     userPrompt: string
-  ): Promise<string> {
+  ): Promise<{ text: string; usage?: any }> {
     if (!this.gemini) {
       throw new AIServiceError('Gemini not initialized');
     }
@@ -163,12 +186,19 @@ export class AIService {
     const result = await model.generateContent(fullPrompt);
     const response = result.response;
     const responseText = response.text();
+    const usageMetadata = response.usageMetadata;
+
+    const usage = usageMetadata ? {
+      promptTokens: usageMetadata.promptTokenCount,
+      completionTokens: usageMetadata.candidatesTokenCount,
+      totalTokens: usageMetadata.totalTokenCount
+    } : undefined;
 
     if (!responseText) {
       throw new AIServiceError('Empty response from Gemini');
     }
 
-    return responseText;
+    return { text: responseText, usage };
   }
 
   /**

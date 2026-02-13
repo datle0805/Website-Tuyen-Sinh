@@ -11,7 +11,7 @@ dotenv.config();
 
 // Connect to database
 // Connect to database (handled in middleware for serverless)
-// connectDB();
+connectDB();
 
 const app = express();
 
